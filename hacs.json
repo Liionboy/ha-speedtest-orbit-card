@@ -1,0 +1,6 @@
+{
+  "name": "Speedtest Orbit Card",
+  "filename": "ha-speedtest-orbit-card.js",
+  "render_readme": true,
+  "homeassistant": "2024.6.0"
+}

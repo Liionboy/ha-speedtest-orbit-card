@@ -1,0 +1,10 @@
+{
+  "name": "ha-speedtest-orbit-card",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "check": "node --check ha-speedtest-orbit-card.js",
+    "test": "node test/smoke.mjs"
+  }
+}
