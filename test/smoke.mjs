@@ -61,6 +61,20 @@ explicit.setConfig({
 explicit.hass = { states, entities: {} };
 assert.match(explicit.shadowRoot.innerHTML, /932\.4/);
 
+const unifiPing = new Card();
+unifiPing.setConfig({});
+unifiPing.hass = {
+  states: {
+    "sensor.unifi_speed_test_ping_secondary_wan": {
+      state: "4.0",
+      last_changed: "2026-10-15T08:00:00Z",
+      attributes: { friendly_name: "UniFi Speed Test Ping Secondary WAN", unit_of_measurement: "ms" },
+    },
+  },
+  entities: {},
+};
+assert.match(unifiPing.shadowRoot.innerHTML, /<div class="metric-value ">4<span class="metric-unit">ms<\/span>/, "auto-discovers a UniFi Speed Test ping sensor without speedtestdotnet registry metadata");
+
 const unavailable = new Card();
 unavailable.setConfig({ auto_discover: false });
 unavailable.hass = { states: {}, entities: {} };

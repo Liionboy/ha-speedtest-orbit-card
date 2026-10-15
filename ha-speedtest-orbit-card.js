@@ -1,5 +1,5 @@
 const CARD_TYPE = "ha-speedtest-orbit-card";
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const PALETTES = new Set(["aurora", "ocean", "sunset", "lavender"]);
 const METRICS = [
   { key: "download", label: "Download", icon: "mdi:download" },
@@ -106,16 +106,25 @@ class SpeedtestOrbitCard extends HTMLElement {
 
   _resolve() {
     const states = this._hass?.states || {};
-    const entries = Object.values(this._hass?.entities || {})
-      .filter((entry) => entry.platform === "speedtestdotnet")
-      .map((entry) => ({ id: entry.entity_id, name: entry.original_name || entry.name || states[entry.entity_id]?.attributes?.friendly_name || entry.entity_id }));
+    const entries = Object.values(this._hass?.entities || {}).map((entry) => ({
+      id: entry.entity_id,
+      platform: entry.platform,
+      name: entry.original_name || entry.name || states[entry.entity_id]?.attributes?.friendly_name || entry.entity_id,
+    }));
+    const registeredIds = new Set(entries.map((entry) => entry.id));
+    for (const id of Object.keys(states)) {
+      if (id.startsWith("sensor.") && !registeredIds.has(id)) entries.push({ id, platform: "", name: states[id]?.attributes?.friendly_name || id });
+    }
     const ids = {};
     for (const key of ["download", "upload", "ping"]) {
       const explicit = this._config[`${key}_entity`];
       if (explicit) { ids[key] = explicit; continue; }
       if (!this._config.auto_discover) { ids[key] = ""; continue; }
       const aliases = key === "ping" ? ["ping", "latency"] : [key];
-      const found = entries.find((entry) => aliases.some((alias) => normalized(entry.name).includes(alias) || normalized(entry.id).includes(alias)));
+      const matchesMetric = (entry) => aliases.some((alias) => normalized(entry.name).includes(alias) || normalized(entry.id).includes(alias));
+      const native = entries.find((entry) => entry.platform === "speedtestdotnet" && matchesMetric(entry));
+      const namedSpeedtest = entries.find((entry) => normalized(`${entry.name} ${entry.id}`).includes("speedtest") && matchesMetric(entry));
+      const found = native || namedSpeedtest;
       const conventional = `sensor.speedtest_${key}`;
       ids[key] = found?.id || (states[conventional] ? conventional : "");
     }
