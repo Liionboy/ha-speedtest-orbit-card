@@ -2,6 +2,10 @@
 
 A theme-aware Home Assistant Lovelace card for Speedtest.net measurements, styled as a compact network observatory to match the UniFi Orbit card.
 
+## Compatibility
+
+Auto-discovery prefers available sensors from the official Speedtest.net integration. It also detects explicitly named Speed Test sensors from other integrations, such as UniFi WAN ping sensors. If a native Speedtest.net sensor is unavailable, a matching available UniFi Speed Test sensor is selected instead.
+
 ## Features
 
 - Download, upload, and ping values from Home Assistant sensor entities

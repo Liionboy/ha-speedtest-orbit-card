@@ -65,15 +65,21 @@ const unifiPing = new Card();
 unifiPing.setConfig({});
 unifiPing.hass = {
   states: {
+    "sensor.speedtest_ping": {
+      state: "unavailable",
+      attributes: { friendly_name: "Speedtest Ping", unit_of_measurement: "ms" },
+    },
     "sensor.unifi_speed_test_ping_secondary_wan": {
       state: "4.0",
       last_changed: "2026-10-15T08:00:00Z",
       attributes: { friendly_name: "UniFi Speed Test Ping Secondary WAN", unit_of_measurement: "ms" },
     },
   },
-  entities: {},
+  entities: {
+    "sensor.speedtest_ping": { entity_id: "sensor.speedtest_ping", platform: "speedtestdotnet", original_name: "Speedtest Ping" },
+  },
 };
-assert.match(unifiPing.shadowRoot.innerHTML, /<div class="metric-value ">4<span class="metric-unit">ms<\/span>/, "auto-discovers a UniFi Speed Test ping sensor without speedtestdotnet registry metadata");
+assert.match(unifiPing.shadowRoot.innerHTML, /<div class="metric-value ">4<span class="metric-unit">ms<\/span>/, "prefers an available UniFi Speed Test ping over an unavailable native Speedtest.net sensor");
 
 const unavailable = new Card();
 unavailable.setConfig({ auto_discover: false });

@@ -1,5 +1,5 @@
 const CARD_TYPE = "ha-speedtest-orbit-card";
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 const PALETTES = new Set(["aurora", "ocean", "sunset", "lavender"]);
 const METRICS = [
   { key: "download", label: "Download", icon: "mdi:download" },
@@ -122,11 +122,15 @@ class SpeedtestOrbitCard extends HTMLElement {
       if (!this._config.auto_discover) { ids[key] = ""; continue; }
       const aliases = key === "ping" ? ["ping", "latency"] : [key];
       const matchesMetric = (entry) => aliases.some((alias) => normalized(entry.name).includes(alias) || normalized(entry.id).includes(alias));
-      const native = entries.find((entry) => entry.platform === "speedtestdotnet" && matchesMetric(entry));
-      const namedSpeedtest = entries.find((entry) => normalized(`${entry.name} ${entry.id}`).includes("speedtest") && matchesMetric(entry));
-      const found = native || namedSpeedtest;
+      const isAvailable = (entry) => !isUnavailable(states[entry.id]);
+      const native = entries.find((entry) => entry.platform === "speedtestdotnet" && matchesMetric(entry) && isAvailable(entry));
+      const namedSpeedtest = entries.find((entry) => normalized(`${entry.name} ${entry.id}`).includes("speedtest") && matchesMetric(entry) && isAvailable(entry));
       const conventional = `sensor.speedtest_${key}`;
-      ids[key] = found?.id || (states[conventional] ? conventional : "");
+      const conventionalAvailable = states[conventional] && !isUnavailable(states[conventional]) ? conventional : "";
+      ids[key] = native?.id || namedSpeedtest?.id || conventionalAvailable
+        || entries.find((entry) => entry.platform === "speedtestdotnet" && matchesMetric(entry))?.id
+        || entries.find((entry) => normalized(`${entry.name} ${entry.id}`).includes("speedtest") && matchesMetric(entry))?.id
+        || (states[conventional] ? conventional : "");
     }
     const data = { ids, title: this._config.title || "Internet Speed", palette: this._config.palette };
     const fallbacks = { download: "Mbit/s", upload: "Mbit/s", ping: "ms" };
